@@ -17,6 +17,7 @@ import {
   Text,
   useColorScheme,
   View,
+  PermissionsAndroid,
 } from 'react-native';
 
 import {
@@ -83,36 +84,60 @@ function App(): React.JSX.Element {
           }}>
           <Section title="Step One">
             <Button
-              onPress={() => {
-                request(PERMISSIONS.IOS.MEDIA_LIBRARY).then(stat => {
-                  console.log('stat', stat);
-                  if (stat === 'granted') {
+              onPress={async () => {
+                if (Platform.OS === 'ios') {
+                  request(PERMISSIONS.IOS.MEDIA_LIBRARY).then(stat => {
+                    console.log('stat', stat);
+                    if (stat === 'granted') {
+                      const savePath =
+                        RNFetchBlob.CachesDirectoryPath + '/name.pdf';
+                      const {promise: downPromise} = RNFetchBlob.downloadFile({
+                        fromUrl:
+                          'https://ebike-erp-1304383094.cos.ap-beijing.myqcloud.com/dev/H01/202405/01/171634735561374.png',
+                        toFile: savePath,
+                      });
+                      downPromise
+                        .then(() => {
+                          console.log('download success');
+
+                          if (Platform.OS === 'ios') {
+                            Share.open({
+                              saveToFiles: true,
+                              url: savePath,
+                            }).then(res => {
+                              if (res.success) console.log('share success');
+                            });
+                          } else if (Platform.OS === 'android') {
+                            console.log('RNFetchBlob');
+                            console.log(RNFetchBlob);
+                          }
+                        })
+                        .catch(error => {
+                          console.log('error', error);
+                        });
+                    }
+                  });
+                } else if (Platform.OS === 'android') {
+                  console.log('android get permission');
+                  const writePers = await PermissionsAndroid.request(
+                    PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+                  ).then(s => {
+                    console.log('WRITE_EXTERNAL_STORAGE');
+                    console.log(s);
+                    return s === 'granted';
+                  });
+                  const readPers = await PermissionsAndroid.request(
+                    PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+                  ).then(s => {
+                    console.log('READ_EXTERNAL_STORAGE');
+                    console.log(s);
+                    return s === 'granted';
+                  });
+                  if (writePers && readPers) {
                     const savePath =
                       RNFetchBlob.CachesDirectoryPath + '/name.pdf';
-                    const {promise: downPromise} = RNFetchBlob.downloadFile({
-                      fromUrl:
-                        'https://ebike-erp-1304383094.cos.ap-beijing.myqcloud.com/dev/H01/202405/01/171634735561374.png',
-                      toFile: savePath,
-                    });
-                    downPromise
-                      .then(() => {
-                        console.log('download success');
-
-                        if (Platform.OS === 'ios') {
-                          Share.open({
-                            saveToFiles: true,
-                            url: savePath,
-                          }).then(res => {
-                            if (res.success) console.log('share success');
-                          });
-                        } else if (Platform.OS === 'android') {
-                        }
-                      })
-                      .catch(error => {
-                        console.log('error', error);
-                      });
                   }
-                });
+                }
               }}
               title="download"></Button>
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
