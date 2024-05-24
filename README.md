@@ -111,10 +111,37 @@ end
 
 重启项目即可
 
-###
+### 相关资料
 
 - xcode 缓存
 
 通常在这个目录，如果没有，可以在 xcode -> settings -> Locations -> Derived Data （下面有文件路径）
 
 `rm -rf ~/Library/Developer/Xcode/DerivedData`
+
+## Android
+
+- 修改 `android/app/src/main/AndroidManifest.xml` 文件， 添加权限
+
+```.xml
+    <!-- Required only if your app needs to access images or photos
+     that other apps created. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Required only if your app needs to access videos
+        that other apps created. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+    <!-- Required only if your app needs to access audio files
+        that other apps created. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+```
+
+- 申请权限使用 `PERMISSIONS.ANDROID.READ_MEDIA_VIDEO` 这个是个要注意的点。（`READ_EXTERNAL_STORAGE` 这个肯定是不能用了）
+- 配置后当获取权限完成就能拿到 下载文件路径，否则这个路径是 `null` ，拿到后直接保存就行了。
+
+### 相关资料
+
+- react native 权限点位置 `node_modules/react-native/PermissionsAndroid/PermissionsAndroid.js`
+- [所有的权限文档](https://developer.android.com/reference/android/Manifest.permission)

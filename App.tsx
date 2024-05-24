@@ -27,7 +27,12 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-import {request, PERMISSIONS} from 'react-native-permissions';
+import {
+  request,
+  PERMISSIONS,
+  requestMultiple,
+  check,
+} from 'react-native-permissions';
 import RNFetchBlob from 'react-native-fs';
 import Share from 'react-native-share';
 
@@ -92,8 +97,7 @@ function App(): React.JSX.Element {
                       const savePath =
                         RNFetchBlob.CachesDirectoryPath + '/name.pdf';
                       const {promise: downPromise} = RNFetchBlob.downloadFile({
-                        fromUrl:
-                          'https://ebike-erp-1304383094.cos.ap-beijing.myqcloud.com/dev/H01/202405/01/171634735561374.png',
+                        fromUrl: 'https://reactnative.cn/img/header_logo.svg',
                         toFile: savePath,
                       });
                       downPromise
@@ -118,25 +122,27 @@ function App(): React.JSX.Element {
                     }
                   });
                 } else if (Platform.OS === 'android') {
-                  console.log('android get permission');
-                  const writePers = await PermissionsAndroid.request(
-                    PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
-                  ).then(s => {
-                    console.log('WRITE_EXTERNAL_STORAGE');
-                    console.log(s);
-                    return s === 'granted';
+                  console.log('android get permission', Platform.Version);
+
+                  await request(PERMISSIONS.ANDROID.READ_MEDIA_VIDEO, {
+                    buttonPositive: 'true',
+                    message: 'test',
+                    title: 'per',
+                  }).then(res => {
+                    console.log('READ_MEDIA_VIDEO', res);
+                    if (res === 'granted') {
+                      const savePath =
+                        RNFetchBlob.DownloadDirectoryPath + '/name.png';
+
+                      const {promise: downPromise} = RNFetchBlob.downloadFile({
+                        fromUrl: 'https://reactnative.cn/img/header_logo.svg',
+                        toFile: savePath,
+                      });
+                      downPromise.then(res => {
+                        console.log('download success', res);
+                      });
+                    }
                   });
-                  const readPers = await PermissionsAndroid.request(
-                    PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
-                  ).then(s => {
-                    console.log('READ_EXTERNAL_STORAGE');
-                    console.log(s);
-                    return s === 'granted';
-                  });
-                  if (writePers && readPers) {
-                    const savePath =
-                      RNFetchBlob.CachesDirectoryPath + '/name.pdf';
-                  }
                 }
               }}
               title="download"></Button>
